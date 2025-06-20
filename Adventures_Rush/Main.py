@@ -1,4 +1,5 @@
 # Main game file
+import os
 import random
 import pickle as p
 import Characters as c
@@ -24,6 +25,9 @@ Do you wish to play Adventurer's Rush?
 y = Yes
 n = No
 o = Open saved file \n""")
+    
+# Think moving load game after this section so that way it would load after the game starts for less confusion
+
     if ply == "y":
         while town == 0: # The user is given the option to enter the town to upgrade equipment, buy potions, or sell monster parts
             dis = 100
@@ -38,7 +42,9 @@ b = Blacksmith (Upgrade armor)
 t = Trainer (Train with a trainer)
 a = Alchemist (Buy more potions)
 m = Monster Guild (Sell your monster parts)
-l = Leave (Go into the cave)\n""")
+i = Inventory (Check your inventory)
+l = Leave (Go into the cave)
+q = Quit (Quit the Game)\n""")
                     if shop == "b":
                         bAns = input("Would you like to upgrade your armor for 50 gold giving you +5 HP? (y = Yes, n = No)\n")
                         if bAns == "y":
@@ -46,7 +52,7 @@ l = Leave (Go into the cave)\n""")
                                 inventory["Gold"] -= 50
                                 hUP += 5
                                 print("Remaining Gold: ", inventory["Gold"])
-                                print("New HP: ", c.player.health + hUP)
+                                print("New HP: ", c.player.health + hUP, '/', 80 + hUP)
                             else:
                                 input("You do not have enough gold.\nPress \"Enter\" to continue")
                     if shop == "t":
@@ -60,7 +66,7 @@ l = Leave (Go into the cave)\n""")
                             else:
                                 input("You do not have enough gold.\nPress \"Enter\" to continue")
                     if shop == "a":
-                        aAns = input("Would you like to go into the Alchemist's shop and buy a potion? (y = Yes, n = No)\n")
+                        aAns = input("Would you like to go into the Alchemist's shop and buy a potion for 20 gold? (y = Yes, n = No)\n")
                         if aAns == "y":
                             if inventory["Gold"] - 20 >= 0:
                                 inventory["Gold"] -= 20
@@ -79,13 +85,21 @@ l = Leave (Go into the cave)\n""")
                                 print("Total Gold: ", inventory["Gold"])
                             else:
                                 input("You do not have any Monster Parts to sell.\nPress \"Enter\" to continue")
+                    if shop == "i":
+                        print(inventory)
+                        print("Current HP: ", c.player.health + hUP)
+                        print("Current Damage: ", c.player.power + dUP)
+                        iPau = input("Press \"Enter\" to continue\n")
                     if shop == "l":
-                        lAns = input("Would you like to leave the town and enter the caves?\n")
+                        lAns = input("Would you like to leave the town and enter the caves? (y = Yes, n = No)\n")
                         if lAns == "y":
                             peanut = "c"
                             break
                         else:
                             input("You decide to stay in town.\nPress \"Enter\" to continue")
+                    if shop == "q":
+                        print("The Adventurer left the game.")
+                        quit()
             if peanut == "c":
                 while dis >= 1:
                     encounterChance = random.randrange(10)
@@ -130,9 +144,9 @@ l = Leave (Go into the cave)\n""")
                                     if c.player.health <= 79 + hUP:
                                         c.player.health += 25
                                         print("Number of potions left: ", inventory["Potions"])
-                                        print("Current HP: ", c.player.health + hUP)
+                                        print("Current HP: ", c.player.health + hUP, "/", 80 + hUP)
                                     else:
-                                        print("The potion has no effect (HP at Max)")
+                                        print("The potion has no effect (HP at Max)" + "\nCurrent HP: ", c.player.health + hUP)
                                         hMax = input("Press \"Enter\" to continue \n")
                                         break
                                 else:
@@ -145,32 +159,47 @@ l = Leave (Go into the cave)\n""")
                         print(inventory)
                         iPau = input("Press \"Enter\" to continue\n")
                     if Ans == "s":
-                        with open("distance.pk1", "wb") as dFile:
+                        save_dir = os.path.join("Adventures_Rush", "Saved_Game")
+                        if not os.path.exists(save_dir):
+                            os.makedirs(save_dir)
+                        with open(os.path.join(save_dir, "distance.pk1"), "wb") as dFile:
                             p.dump(dis, dFile)
-                        with open("health.pk1", "wb") as hFile:
+                        with open(os.path.join(save_dir, "health.pk1"), "wb") as hFile:
                             p.dump(c.player.health, hFile)
-                        with open("MonsterSlain.pk1", "wb") as mFile:
+                        with open(os.path.join(save_dir, "MonsterSlain.pk1"), "wb") as mFile:
                             p.dump(mSlain, mFile)
-                        with open("inventory.pk1", "wb") as iFile:
+                        with open(os.path.join(save_dir, "inventory.pk1"), "wb") as iFile:
                             p.dump(inventory, iFile)
-                        sPau = input("Game Saved!\nPress \"Enter\" to continue\n")
+                        sPau = input("Game Saved!\nWould you like to quit? (y = Yes, n = No)\n")
+                        if sPau == "y":
+                            print("The Adventurer left the game.")
+                            quit()
+                        else:
+                            print("You continue your adventure.")
+
 
                 print("You've left the caves after defeating ", mSlain, " monsters!")
-                coin = 1
-                quit()
         town = 1
     if ply == "o":
         try:
-            with open("distance.pk1", "rb") as dFile:
-                dis = p.load(dFile)
-            with open("MonsterSlain.pk1", "rb") as mFile:
-                mSlain = p.load(mFile)
-            with open("inventory.pk1", "rb") as iFile:
-                inventory = p.load(iFile)
-            c.player.load_health("health.pk1")
-            coin = 1
+            save_dir = os.path.join("Adventures_Rush", "Saved_Game")
+            c.player.load_distance(os.path.join(save_dir, "distance.pk1"))
+            c.player.load_MonsterSlain(os.path.join(save_dir, "MonsterSlain.pk1"))
+            c.player.load_inventory(os.path.join(save_dir, "inventory.pk1"))
+            c.player.load_health(os.path.join(save_dir, "health.pk1"))
+            town = 1
             print("Saved Game Loaded")
+            ply = input("Would you like to continue? (y = Yes, n = No)\n")
+            if ply == "y":
+                print("Continuing your adventure...")
+            else:
+                print("The Adventurer left the game.")
+                quit()
+            
+        
         except FileNotFoundError:
             print("No saved game file found.")
+
+        
     if ply == "n":
         quit()

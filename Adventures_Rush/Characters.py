@@ -1,5 +1,6 @@
 # Characters.py
 import random
+import os
 import pickle as p
 
 class GameCharacter:
@@ -18,16 +19,41 @@ class GameCharacter:
         with open(filename, "wb") as hFile:
             p.dump(self.health, hFile)
 
+    def load_distance(self, filename):
+        try:
+            save_dir = os.path.join("Adventures_Rush", "Saved_Game")
+            with open(os.path.join(save_dir, "distance.pk1"), "rb") as dFile:
+                self.distance = p.load(dFile)
+        except FileNotFoundError:
+            print("No saved distance file found. Using default distance.")
+
+    def load_MonsterSlain(self, filename):
+        try:
+            save_dir = os.path.join("Adventures_Rush", "Saved_Game")
+            with open(os.path.join(save_dir, "MonsterSlain.pk1"), "rb") as mFile:
+                self.MonsterSlain = p.load(mFile)
+        except FileNotFoundError:
+            print("No saved monster slain file found. Using default monster slain.")
+
+    def load_inventory(self, filename):
+        try:
+            save_dir = os.path.join("Adventures_Rush", "Saved_Game")
+            with open(os.path.join(save_dir, "inventory.pk1"), "rb") as iFile:
+                self.inventory = p.load(iFile)
+        except FileNotFoundError:
+            print("No saved inventory file found. Using default inventory.")
+
     def load_health(self, filename):
         try:
-            with open(filename, "rb") as hFile:
+            save_dir = os.path.join("Adventures_Rush", "Saved_Game")
+            with open(os.path.join(save_dir, "health.pk1"), "rb") as hFile:
                 self.health = p.load(hFile)
         except FileNotFoundError:
             print("No saved health file found. Using default health.")
 
 # Initialize player and monsters
 player = GameCharacter("Adventurer", 20, 80, 0)
-player.load_health("health.pk1")
+
 
 monster1 = GameCharacter("Goblin", 10, 20, 3)
 monster2 = GameCharacter("Orc", 17, 30, 5)
