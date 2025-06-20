@@ -1,0 +1,12 @@
+using System;
+
+namespace Budget_App
+{
+    public class App
+    {
+        public static void Main(string[] args)
+        {
+            Console.WriteLine("You have no moneies");
+        }
+    }
+}
